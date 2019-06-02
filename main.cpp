@@ -95,6 +95,40 @@ namespace meta {
     {
         return {};
     }
+
+    template<class T, class... Ts>
+    constexpr bool contains_bad(type_pack<Ts...>)
+    {
+        bool bs[] = {std::is_same<T, Ts>::value...};
+        bool res = {false};
+
+        for (const auto b: bs){
+            res |= b;
+        }
+
+        return res;
+    }
+
+    template<class T, class... Ts>
+    constexpr bool contains(type_pack<Ts...>)
+    {
+        return (... || std::is_same_v<T, Ts>);
+    }
+
+    template<class T, class... Ts>
+    constexpr size_t find(type_pack<Ts...> tp)
+    {
+        bool bs[] = {std::is_same_v<T, Ts>...};
+
+        for (size_t i = 0; i < size(tp); ++i)
+        {
+            if (bs[i])  
+            {
+                return i;
+            }
+        }
+    return size(tp);
+    }
 }
 
 namespace bind {
@@ -139,6 +173,11 @@ int main(int argc, char const *argv[])
 
     static_assert(push_back<double>(type_pack<int, double>{}) == 
         type_pack<int, double, double>{});
+
+    static_assert(contains<int>(type_pack<double, int, char*>{}));
+    static_assert(!contains<int>(empty_pack{}));
+
+    static_assert(find<int>(type_pack<double, char*, int>{}) == 2);
     #endif
 
     #if 0
