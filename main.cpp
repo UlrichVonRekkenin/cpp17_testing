@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <string>
 #include <cassert>
 #include <type_traits>
@@ -129,6 +130,42 @@ namespace meta {
         }
     return size(tp);
     }
+
+    template< class F, class... Ts>
+    constexpr size_t find_if(F f, type_pack<Ts...> tp){
+        bool bs[] = {f(just_type<Ts>{})...};
+
+        for (size_t i = 0; i < size(tp); ++i) {
+            if (bs[i]) {
+                return i;
+            }
+        }
+        return size(tp);
+    }
+
+    template<template <class...> class F>
+    struct value_fn {
+        template<class... Ts>
+        constexpr auto operator()(just_type<Ts>...)
+        {
+            return F<Ts...>::value;
+        }
+    };
+
+    // template<template <class...> class F>
+    // struct type_fn {
+    //     template<class... Ts>
+    //     constexpr auto operator()(just_type<Ts>...)
+    //     {
+    //         return just_type<typename F<Ts...>::type{};
+    //     }
+    // };
+
+    template<template <class...> class F>
+    constexpr value_fn<F> value_fn_v;
+
+    // template<template <class...> class F>
+    // constexpr type_fn<F> type_fn_v;
 }
 
 namespace bind {
@@ -162,7 +199,7 @@ int main(int argc, char const *argv[])
     static_assert(is_same<type_t, int>::value);
 
     using foo = type_pack<double, int, char*>; 
-    std::cout << "sizeof = " << size(empty_pack{}) << "; " << size(foo{});
+    std::cout << "sizeof = " << size(empty_pack{}) << "; " << size(foo{}) << std::endl;
     static_assert(foo{} != empty_pack{});
 
     static_assert(head(foo{}) == just_type<double>{});
@@ -178,6 +215,8 @@ int main(int argc, char const *argv[])
     static_assert(!contains<int>(empty_pack{}));
 
     static_assert(find<int>(type_pack<double, char*, int>{}) == 2);
+
+    static_assert(find_if(value_fn_v<std::is_pointer>, type_pack<double, int*>{}) == 1);
     #endif
 
     #if 0
