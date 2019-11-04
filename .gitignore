@@ -1,6 +1,9 @@
 # Qt
 *.pro.user
 
+# CLion
+.idea
+
 #vscode
 .vscode
 
@@ -36,3 +39,6 @@
 *.exe
 *.out
 *.app
+
+# cmake
+cmake-build-debug
