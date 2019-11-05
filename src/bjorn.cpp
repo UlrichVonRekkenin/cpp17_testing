@@ -61,9 +61,7 @@ namespace lambda {
 constexpr auto tuple = [](auto&& ... ts) { return [=](const auto& func) { return func(ts...); }; };
 
 constexpr auto and_elements = [](auto&& func) {
-  return [func = std::forward<decltype(func)>(func)](auto ...elements) {
-    return (func(elements) && ...);
-  };
+  return [func = std::forward<decltype(func)>(func)](auto ...elements) { return (func(elements) && ...); };
 };
 
 constexpr auto bind_rh = [](auto func, auto rh) { return [=](auto lh) { return func(lh, rh); }; };
@@ -101,11 +99,13 @@ int main()
         enum state_t { Idle, Connecting, Connected, Disconnecting, Disconnected };
         using namespace tmp;
         assert(is_in(Idle)(Idle, Disconnected));
+        assert(is_in(std::string("foo"))(std::string("bar"), std::string("foo")));
         assert(!is_in(Idle)(Disconnected, Connecting));
         assert(is{Idle}.any_of(Idle, Connected, Disconnecting));
 
         assert(any_of(Idle, Disconnecting)==Disconnecting);
         assert(any_of(41, 42, 43)==42);
+        assert(any_of(std::string("bar"), std::string("foo"))==std::string("foo"));
         assert(each_of(42, 42, 42)==42);
     }
 
